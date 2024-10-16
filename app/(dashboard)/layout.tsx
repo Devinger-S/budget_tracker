@@ -9,9 +9,14 @@ export default async function DashBoardLayout({
 }) {
   const session = await auth();
   return (
-    <section className="relative flex h-screen w-full flex-col ">
+    <section
+      id="dashboardlayout"
+      className="relative flex h-screen w-full flex-col "
+    >
       <Navbar session={session} />
-      <div className="w-full">{children}</div>
+      <section id="children" className="w-full">
+        {children}
+      </section>
     </section>
   );
 }
