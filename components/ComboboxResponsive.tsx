@@ -25,7 +25,7 @@ import { UserSettings } from "@prisma/client";
 import { UpdateUserCurrency } from "@/app/actions/updateUserCurrency";
 import { toast } from "sonner";
 
-export function ComboBoxResponsive() {
+export default function ComboBoxResponsive() {
   const [open, setOpen] = React.useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [selectedOption, setSelectedOption] = React.useState<Currency | null>(

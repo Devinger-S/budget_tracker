@@ -2,11 +2,21 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Session, User } from "@auth/core/types";
 import { CreateTransactionDialog } from "./_components/CreateTransactionDialog";
+import Overview from "./_components/Overview";
+import prisma from "@/lib/prisma";
+import History from "./_components/History";
 
 export default async function DashboardPage() {
   const session: Session | null = await auth();
 
   const user: User | undefined = session?.user;
+
+  if (!user) {
+    return;
+  }
+  const userSettings = await prisma.userSettings.findUnique({
+    where: { userId: user?.id },
+  });
 
   return (
     <section id="dashboardPage" className="h-full bg-background">
@@ -45,6 +55,8 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+      <Overview userSettings={userSettings} />
+      <History userSettings={userSettings} />
     </section>
   );
 }

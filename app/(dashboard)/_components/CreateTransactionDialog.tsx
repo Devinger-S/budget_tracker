@@ -39,6 +39,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateTransaction } from "../_actions/transactions";
 import { toast } from "sonner";
 import { DateToUTCDate } from "@/lib/helpers";
+import { DevTool } from "@hookform/devtools"; // Import the DevTool component
 
 interface Props {
   trigger: ReactNode;
@@ -51,7 +52,7 @@ export function CreateTransactionDialog({ trigger, type }: Props) {
     resolver: zodResolver(CreateTransactionSchema),
     defaultValues: {
       type,
-      date: new Date(),
+      // date: new Date(),
     },
   });
 
@@ -86,146 +87,174 @@ export function CreateTransactionDialog({ trigger, type }: Props) {
 
   const onSubmit = useCallback(
     (values: CreateTransactionShemaType) => {
-      toast.loading("Creating transactions...", { id: "create-transaction" });
+      const selectedDate = values.date;
+      const normalizedDate = new Date(
+        Date.UTC(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          0,
+          0,
+          0,
+          0
+        )
+      );
+      console.log(
+        `values.date ===${values.date}`,
+        `selectedDate ===${selectedDate}`,
+        `normalized date === ${normalizedDate}`
+      );
+      toast.loading(
+        `Creating transactions...,
+        `,
+        { id: "create-transaction" }
+      );
       mutate({
         ...values,
-        date: DateToUTCDate(values.date),
+        date: normalizedDate,
       });
     },
     [mutate]
   );
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader className="flex flex-row">
-          <DialogTitle>
-            Create a new
-            <span
-              className={cn(
-                "m-2 ",
-                type === "income" ? "text-emerald-500" : "text-rose-500"
-              )}
-            >
-              {type}
-            </span>
-          </DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input defaultValue={""} {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Transaction description (optional)
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input defaultValue={0} type="number" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Transaction description (required)
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-
-            <div className="flex items-center justify-between gap-2">
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+        <DialogContent aria-describedby={undefined}>
+          <DialogHeader className="flex flex-row">
+            <DialogTitle>
+              Create a new
+              <span
+                className={cn(
+                  "m-2 ",
+                  type === "income" ? "text-emerald-500" : "text-rose-500"
+                )}
+              >
+                {type}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
-                name="category"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    {/* <FormLabel>Description</FormLabel> */}
                     <FormControl>
-                      <CategoryPicker
-                        type={type}
-                        onChange={handleCategoryChange}
+                      <Input
+                        autoFocus
+                        placeholder={`${type} description...`}
+                        defaultValue={""}
+                        {...field}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Select a category for this transaction
-                    </FormDescription>
+                    {/* <FormDescription>
+                    Transaction description (optional)
+                  </FormDescription> */}
                   </FormItem>
                 )}
               />
               <FormField
                 control={form.control}
-                name="date"
+                name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Transaction Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-[200px] pl-3 text-left font-normal ",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormLabel>Amount</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
                     <FormDescription>
-                      Select a date for this transaction
+                      Transaction description (required)
                     </FormDescription>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-          </form>
-        </Form>
 
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant={"secondary"}
-              onClick={() => {
-                form.reset();
-              }}
-            >
-              Cancel
+              <div className="flex items-center justify-between gap-2">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <FormControl>
+                        <CategoryPicker
+                          type={type}
+                          onChange={handleCategoryChange}
+                        />
+                      </FormControl>
+                      {/* <FormDescription>
+                      Select a category for this transaction
+                    </FormDescription> */}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transaction Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-[200px] pl-3 text-left font-normal ",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {/* <FormDescription>
+                      Select a date for this transaction
+                    </FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </form>
+          </Form>
+          <DevTool control={form.control} />
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant={"secondary"}
+                onClick={() => {
+                  form.reset();
+                }}
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+              {!isPending && "Create"}
+              {isPending && <Loader2 className="animate-spin" />}
             </Button>
-          </DialogClose>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-            {!isPending && "Create"}
-            {isPending && <Loader2 className="animate-spin" />}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

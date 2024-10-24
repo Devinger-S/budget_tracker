@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 
 export async function CreateTransaction(form:CreateTransactionShemaType) {
     const parsedBody = CreateTransactionSchema.safeParse(form)
+    console.log("parsedBody",parsedBody)
 
     if (!parsedBody.success) {throw new Error(parsedBody.error.message)}
 
@@ -47,16 +48,16 @@ export async function CreateTransaction(form:CreateTransactionShemaType) {
             where: {
                 day_month_year_userId: {
                     userId:user.id as string,
-                    day:date.getUTCDate(),
-                    month:date.getUTCMonth(),
-                    year:date.getUTCFullYear(),
+                    day:date.getDate(),
+                    month:date.getMonth(),
+                    year:date.getFullYear(),
                 },
             },
             create: {
                 userId:user.id  as string,
-                day: date.getUTCDate(),
-                 month:date.getUTCMonth(),
-                    year:date.getUTCFullYear(),
+                day: date.getDate(),
+                 month:date.getMonth(),
+                    year:date.getFullYear(),
                     expense: type === "expense" ? amount : 0 ,
                     income: type === "income" ? amount : 0,
             },
